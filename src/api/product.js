@@ -61,6 +61,7 @@ export function addProduct({
   officeHours,
   description,
   price,
+  area,
   imgUrl,
   saleList
 }) {
@@ -75,7 +76,32 @@ export function addProduct({
     officeHours,
     description,
     price,
+    area,
     imgUrl,
     saleList
-  }) 
+  });
+}
+
+export function updateProduct({
+  id,
+  name,
+  type,
+  tel,
+  officeHours,
+  description,
+  price,
+  imgUrl,
+  saleList
+}) {
+  return request.post('/product/editProduct', {
+    id,
+    name,
+    type,
+    tel,
+    officeHours,
+    description,
+    price,
+    imgUrl,
+    saleList
+  });
 }

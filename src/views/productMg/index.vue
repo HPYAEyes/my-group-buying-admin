@@ -2,7 +2,7 @@
   <div class="product-manage">
     <el-form :inline="true" :model="filter">
       <el-form-item label="城市" prop="city">
-        <el-cascader v-model="filter.city" :options="cityList" :props="cityProps" placeholder="请选择" @change="getAreaList">
+        <el-cascader v-model="filter.city" :options="cityList" :props="cityProps" placeholder="请选择" @change="getAreaList()">
         </el-cascader>
       </el-form-item>
       <el-form-item label="区域" prop="city">
@@ -47,47 +47,63 @@
       class="table">
       <el-table-column type="expand">
         <template slot-scope="props">
-          <el-form label-position="left" class="table-expand">
-            <el-form-item label="id">
-              <span>{{ props.row._id }}</span>
-            </el-form-item>
-            <el-form-item label="类别">
-              <span>{{ props.row.type }}</span>
-            </el-form-item>
-            <el-form-item label="店名">
-              <span>{{ props.row.name }}</span>
-            </el-form-item>
-            <el-form-item label="所属区域">
-              <span>{{ props.row.area }}</span>
-            </el-form-item>
-            <el-form-item label="所属街道">
-              <span>{{ props.row.place }}</span>
-            </el-form-item>
-            <el-form-item label="详细地址">
-              <span>{{ props.row.address }}</span>
-            </el-form-item>
-            <el-form-item label="联系电话">
-              <span>{{ props.row.tel }}</span>
-            </el-form-item>
-            <el-form-item label="营业时间">
-              <span>{{ props.row.officeHours }}</span>
-            </el-form-item>
-            <el-form-item label="是否热门">
-              <span>{{ props.row.hot ? '是' : '否' }}</span>
-            </el-form-item>
-            <el-form-item label="人均价格">
-              <span>{{ props.row.price }}</span>
-            </el-form-item>
-            <el-form-item label="平均好评率">
-              <span>{{ props.row.averRate }}</span>
-            </el-form-item>
-            <el-form-item label="创建时间">
-              <span>{{ $moment(props.row.createdAt).format('lll') }}</span>
-            </el-form-item>
-            <el-form-item label="更新时间">
-              <span>{{ $moment(props.row.updatedAt).format('lll') }}</span>
-            </el-form-item>
-          </el-form>
+          <div class="slot-expand">
+            <el-form label-position="left" class="table-expand">
+              <el-form-item label="id">
+                <span>{{ props.row._id }}</span>
+              </el-form-item>
+              <el-form-item label="类别">
+                <span>{{ props.row.type }}</span>
+              </el-form-item>
+              <el-form-item label="店名">
+                <span>{{ props.row.name }}</span>
+              </el-form-item>
+              <el-form-item label="所属区域">
+                <span>{{ props.row.area }}</span>
+              </el-form-item>
+              <el-form-item label="所属街道">
+                <span>{{ props.row.place }}</span>
+              </el-form-item>
+              <el-form-item label="详细地址">
+                <span>{{ props.row.address }}</span>
+              </el-form-item>
+              <el-form-item label="联系电话">
+                <span>{{ props.row.tel }}</span>
+              </el-form-item>
+              <el-form-item label="营业时间">
+                <span>{{ props.row.officeHours }}</span>
+              </el-form-item>
+              <el-form-item label="是否热门">
+                <span>{{ props.row.hot ? '是' : '否' }}</span>
+              </el-form-item>
+              <el-form-item label="人均价格">
+                <span>{{ props.row.price }}</span>
+              </el-form-item>
+              <el-form-item label="平均好评率">
+                <span>{{ props.row.averRate }}</span>
+              </el-form-item>
+              <el-form-item label="创建时间">
+                <span>{{ $moment(props.row.createdAt).format('lll') }}</span>
+              </el-form-item>
+              <el-form-item label="更新时间">
+                <span>{{ $moment(props.row.updatedAt).format('lll') }}</span>
+              </el-form-item>
+            </el-form>
+            <div>
+              <div style="display:flex;align-items:center">
+                <span style="color:#99a9bf;">照片墙</span>
+                <img class="pic-list" v-for="(item, index) in props.row.imgUrl" :key="index" :src="item"> 
+              </div>
+              <div class="sale-list">
+                <template v-for="(item, index) in props.row.saleList">
+                  <h3 :key="index">套餐{{ index + 1 }}</h3>
+                  <p :key="index">名称：{{ item.name }}</p>
+                  <p :key="index">门市价：{{ item.salePrice }}</p>
+                  <p :key="index">优惠价：{{ item.offPrice }}</p>
+                </template>
+              </div>
+            </div>
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -131,7 +147,7 @@
         label="操作">
         <template slot-scope="scope">
           <el-button type="text" @click="setHot(scope.row)">{{ scope.row.hot ? '取消热门' : '设为热门'}}</el-button>
-          <el-button type="text">编辑</el-button>
+          <el-button type="text" @click="openEditDialog(scope.row)">编辑</el-button>
           <el-button type="text" @click="deleteProduct(scope.row._id)">删除</el-button>
         </template>
       </el-table-column>
@@ -145,8 +161,9 @@
       :page-size="pageInfo.pageSize"
       @current-change="handlePageChange">
     </el-pagination>
+    <!-- 新增商家弹窗 -->
     <el-dialog
-      title="新增"
+      title="新增商家"
       :visible.sync="dialogVisible"
       width="35%"
       center
@@ -169,8 +186,8 @@
             <el-option v-for="item in dialogForm.areaList" :key="item.name" :label="item.name" :value="item.adcode"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="街道" prop="street" label-width="15%">
-          <el-select v-model="dialogForm.street" placeholder="请选择">
+        <el-form-item label="街道" prop="place" label-width="15%">
+          <el-select v-model="dialogForm.place" placeholder="请选择">
             <el-option v-for="item in dialogForm.streetList" :key="item.name" :label="item.name" :value="item.name"></el-option>
           </el-select>
         </el-form-item>
@@ -202,17 +219,64 @@
             <div slot="tip" class="el-upload__tip">默认第一张照片为封面，最多上传五张。只能上传jpg/png文件，且不超过10MB</div>
           </el-upload>
         </el-form-item>
-        <el-form-item label="套餐列表" prop="description" label-width="15%">
-          <el-input v-model="dialogForm.description" placeholder="请输入"></el-input>
-        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleDialog">确 定</el-button>
+        <el-button type="primary" @click="handleDialog('dialogForm', true)">下一步</el-button>
       </span>
     </el-dialog>
+    <!-- 新增商家弹窗 -->
+    <!-- 编辑商家弹窗 -->
     <el-dialog
-      title="新增套餐列表"
+      title="编辑商家"
+      :visible.sync="editDialogVisible"
+      width="35%"
+      center
+      @closed="clearEditFormData">
+      <el-form :model="editDialogForm" ref="editDialogForm">
+        <el-form-item label="店名" prop="name" label-width="15%">
+          <el-input v-model="editDialogForm.name" placeholder="请输入"></el-input>
+        </el-form-item>
+        <el-form-item label="类别" prop="type" label-width="15%">
+          <el-select v-model="editDialogForm.type" placeholder="请选择">
+            <el-option v-for="item in typeList" :key="item._id" :label="item.name" :value="item.name"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="联系电话" prop="tel" label-width="15%">
+          <el-input v-model="editDialogForm.tel" placeholder="请输入"></el-input>
+        </el-form-item>
+        <el-form-item label="营业时间" prop="officeHours" label-width="15%">
+          <el-input v-model="editDialogForm.officeHours" placeholder="请输入"></el-input>
+        </el-form-item>
+        <el-form-item label="人均价格" prop="price" label-width="15%">
+          <el-input v-model="editDialogForm.price" placeholder="请输入"></el-input>
+        </el-form-item>
+        <el-form-item label="套餐描述" prop="description" label-width="15%">
+          <el-input v-model="editDialogForm.description" placeholder="请输入"></el-input>
+        </el-form-item>
+        <el-form-item label="照片墙" label-width="15%">
+          <el-upload
+            action="http://localhost:3333/uploadFiles"
+            :on-remove="handleEditUploadRemove"
+            :on-success="handleEditUploadSuccess"
+            list-type="picture-card"
+            multiple
+            :file-list="editDialogForm.imgUrls"
+            :limit="5"
+            accept="image/png, image/jpeg">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">默认第一张照片为封面，最多上传五张。只能上传jpg/png文件，且不超过10MB</div>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleDialog('editDialogForm', false)">下一步</el-button>
+      </span>
+    </el-dialog>
+    <!-- 编辑商家弹窗 -->
+    <el-dialog
+      title="套餐列表"
       :visible.sync="sellDialogVisible"
       width="35%"
       center
@@ -222,7 +286,7 @@
         v-for="(item, index) in sellForm"
         :key="index"
         :model="item"
-        :ref="'sellForm' + index">
+        ref="sellForm">
         <h3>
           套餐{{index + 1}}
           <i class="el-icon-remove-outline remove-btn" v-if="sellForm.length > 1" @click="sellForm.splice(index, 1)"></i>
@@ -240,7 +304,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="sellDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="sellDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="handleProduct">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -253,7 +317,8 @@ import {
   queryProductList,
   removeProduct,
   changeHot,
-  addProduct
+  addProduct,
+  updateProduct
 } from '@/api/product';
 
 export default {
@@ -316,7 +381,7 @@ export default {
         type: '',
         city: [],
         area: '',
-        street: '',
+        place: '',
         areaList: [],
         streetList: [],
         imgUrls: {},
@@ -326,6 +391,18 @@ export default {
         price: 0,
         description: ''
       },
+      editDialogVisible: false,
+      editDialogForm: {
+        name: '',
+        type: '',
+        address: '',
+        tel: '',
+        officeHours: '',
+        price: 0,
+        description: '',
+        imgUrls: [],
+        imgUrl: [] // 传到后台的url列表
+      },
       sellDialogVisible: false,
       sellForm: [
         {
@@ -334,6 +411,7 @@ export default {
           offPrice: ''
         }
       ],
+      isAdd: false
     };
   },
   async mounted() {
@@ -346,11 +424,17 @@ export default {
   },
   methods: {
     /**
-     * @description 处理新增商家的第一个弹窗
+     * @description 处理新增或编辑商家的第一个弹窗
      */
-    handleDialog() {
-      this.$refs.dialogForm.validate((valid) => {
+    handleDialog(formName, isAdd) {
+      this.$refs[formName].validate((valid) => {
         if (valid) {
+          if (!isAdd) {
+            this.isAdd = false;
+            this.sellForm = this.editDialogForm.saleList;
+          } else {
+            this.isAdd = true;
+          }
           this.sellDialogVisible = true;
         } else {
           return false;
@@ -358,35 +442,62 @@ export default {
       });
     },
     /**
-     * @description 新增商家
+     * @description 新增或编辑商家
      */
-    handleAddProduct() {
+    handleProduct() {
       const isValid = this.sellForm.every((item, index) => {
         let result;
-        this.$refs[`sellForm${index}`].validate((valid) => {
+        this.$refs.sellForm[index].validate((valid) => {
           result = valid;
         })
         return result;
       });
       if (isValid) {
-        const query = {
-          name: this.dialogForm.name,
-          type: this.dialogForm.type,
-          cityCode: this.dialogForm.city[1],
-          area: this.dialogForm.area,
-          street: this.dialogForm.street,
-          address: this.dialogForm.address,
-          tel: this.dialogForm.tel,
-          officeHours: this.dialogForm.officeHours,
-          price: this.dialogForm.price,
-          description: this.dialogForm.description,
-          imgUrl: Object.values(this.dialogForm.imgUrls),
-          saleList: this.sellForm
-        };
-        addProduct(query).then((resp) => {
-          this.$message.success(resp.msg);
-          this.getProductList();
-        });
+        if (this.isAdd) {
+          const query = {
+            name: this.dialogForm.name,
+            type: this.dialogForm.type,
+            cityCode: this.dialogForm.city[1],
+            adcode: this.dialogForm.area,
+            place: this.dialogForm.place,
+            address: this.dialogForm.address,
+            tel: this.dialogForm.tel,
+            officeHours: this.dialogForm.officeHours,
+            price: this.dialogForm.price,
+            description: this.dialogForm.description,
+            imgUrl: Object.values(this.dialogForm.imgUrls),
+            saleList: this.sellForm
+          };
+          this.dialogForm.areaList.forEach((item) => {
+            if (item.adcode === query.adcode) {
+              query.area = item.name;
+            }
+          });
+          addProduct(query).then((resp) => {
+            this.$message.success(resp.msg);
+            this.getProductList();
+            this.sellDialogVisible = false;
+            this.dialogVisible = false;
+          });
+        } else {
+          const query = {
+            id: this.editDialogForm.id,
+            name: this.editDialogForm.name,
+            type: this.editDialogForm.type,
+            tel: this.editDialogForm.tel,
+            officeHours: this.editDialogForm.officeHours,
+            price: this.editDialogForm.price,
+            description: this.editDialogForm.description,
+            imgUrl: this.editDialogForm.imgUrl,
+            saleList: this.sellForm
+          };
+          updateProduct(query).then((resp) => {
+            this.$message.success(resp.msg);
+            this.sellDialogVisible = false;
+            this.editDialogVisible = false;
+            this.getProductList();
+          });
+        }
       }
     },
     /**
@@ -456,6 +567,30 @@ export default {
     handleUploadSuccess(response, file, fileList) {
       this.dialogForm.imgUrls[file.uid] = response.data[0];
     },
+    handleEditUploadRemove(file, fileList) {
+      const index = this.editDialogForm.imgUrls.indexOf(file.url);
+      this.editDialogForm.imgUrl.splice(index, 1);
+      this.editDialogForm.imgUrls = fileList;
+    },
+    handleEditUploadSuccess(response, file, fileList) {
+      this.editDialogForm.imgUrl.push(response.data[0]);
+      this.editDialogForm.imgUrls = fileList;
+    },
+    openEditDialog(row) {
+      this.editDialogForm.name = row.name;
+      this.editDialogForm.type = row.type;
+      this.editDialogForm.id = row._id;
+      this.editDialogForm.tel = row.tel;
+      this.editDialogForm.price = row.price;
+      this.editDialogForm.officeHours = row.officeHours;
+      this.editDialogForm.description = row.description;
+      this.editDialogForm.saleList = row.saleList;
+      this.editDialogForm.imgUrl = row.imgUrl;
+      row.imgUrl.forEach((item) => {
+        this.editDialogForm.imgUrls.push({ url: item });
+      });
+      this.editDialogVisible = true;
+    },
     /**
      * @description 清空弹窗中的表单
      */
@@ -464,6 +599,14 @@ export default {
       this.dialogForm.areaList = [];
       this.dialogForm.streetList = [];
       this.dialogForm.imgUrls = {};
+    },
+    /**
+     * @description 清空编辑弹窗中的表单
+     */
+    clearEditFormData() {
+      this.$refs.editDialogForm.resetFields();
+      this.editDialogForm.imgUrls = [];
+      this.editDialogForm.imgUrl = [];
     },
     /**
      * @description 清空第二个弹窗中的表单
@@ -535,9 +678,32 @@ export default {
   .table {
     width: 100%;
     border: 1px solid #f2f2f2;
+
+    .slot-expand {
+      display: flex;
+      flex-wrap: wrap;
+
+      .sale-list {
+        h3 {
+          margin: 8px 0;
+        }
+
+        p {
+          margin: 8px 0 8px 24px;
+          text-indent: 4;
+        }
+      }
+    }
+
+    .pic-list {
+      margin-left: 16px;
+      width: 120px;
+      height: 80px;
+    }
   }
 
   .table-expand {
+    width: 50%;
     label {
       width: 90px;
       color: #99a9bf;
