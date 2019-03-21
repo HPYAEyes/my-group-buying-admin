@@ -61,6 +61,20 @@ export const constantRouterMap = [
   },
 
   {
+    path: '/productMg',
+    component: Layout,
+    name: 'productMg',
+    meta: { title: '团购信息管理', icon: 'example' },
+    children: [
+      {
+        path: 'index',
+        name: 'product',
+        component: () => import('@/views/productMg/index'),
+      }
+    ]
+  },
+
+  {
     path: '/form',
     component: Layout,
     children: [
