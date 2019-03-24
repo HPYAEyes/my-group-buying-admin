@@ -95,12 +95,12 @@
                 <img class="pic-list" v-for="(item, index) in props.row.imgUrl" :key="index" :src="item"> 
               </div>
               <div class="sale-list">
-                <template v-for="(item, index) in props.row.saleList">
-                  <h3 :key="index">套餐{{ index + 1 }}</h3>
-                  <p :key="index">名称：{{ item.name }}</p>
-                  <p :key="index">门市价：{{ item.salePrice }}</p>
-                  <p :key="index">优惠价：{{ item.offPrice }}</p>
-                </template>
+                <div v-for="(item, index) in props.row.saleList" :key="index">
+                  <h3>套餐{{ index + 1 }}</h3>
+                  <p>名称：{{ item.name }}</p>
+                  <p>门市价：{{ item.salePrice }}</p>
+                  <p>优惠价：{{ item.offPrice }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -211,6 +211,7 @@
             action="http://localhost:3333/uploadFiles"
             :on-remove="handleUploadRemove"
             :on-success="handleUploadSuccess"
+            :file-list="dialogForm.fileList"
             list-type="picture-card"
             multiple
             :limit="5"
@@ -382,6 +383,7 @@ export default {
         city: [],
         area: '',
         place: '',
+        fileList: [],
         areaList: [],
         streetList: [],
         imgUrls: {},
@@ -596,6 +598,7 @@ export default {
      */
     clearFormData() {
       this.$refs.dialogForm.resetFields();
+      this.dialogForm.fileList = [];
       this.dialogForm.areaList = [];
       this.dialogForm.streetList = [];
       this.dialogForm.imgUrls = {};
